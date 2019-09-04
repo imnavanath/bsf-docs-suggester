@@ -1,1 +1,13 @@
-.text-below-single-docs.related-docs-wrapper {margin-bottom: 0;padding-bottom: 0;}
+.related-docs-container {
+    border-top: 1px solid #e6e6e6;
+    padding-top: 25px;
+}
+.related-docs-wrapper .related-docs-section-title {
+    margin-bottom: 20px;
+}
+.text-below-single-docs {
+    border-top: 1px solid #e6e6e6;
+    padding: 25px 0;
+    margin: 3em 0 2em;
+    font-style: italic;
+}

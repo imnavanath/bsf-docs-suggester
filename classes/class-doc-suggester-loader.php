@@ -53,6 +53,8 @@ if ( ! class_exists( 'Doc_Suggester_Loader' ) ) :
 			add_action( 'admin_enqueue_scripts', __CLASS__ . '::admin_meta_scripts', 20 );
 
 			require_once DOC_SUGGESTER_DIR . 'classes/class-meta-box.php';
+
+			add_action( 'loop_end', array( $this, 'get_related_docs_template' ) );
 		}
 
 		/**
@@ -79,6 +81,20 @@ if ( ! class_exists( 'Doc_Suggester_Loader' ) ) :
 		 */
 		public function install_activate_plugin_notice() {
 			printf( __( '<div class="notice notice-error is-dismissible"> <p> <strong> BSF Docs </strong> needs to be active for you to use currently installed <strong>  </strong> plugin. </p> </div>', 'doc-suggester' ), DOC_SUGGESTER_PLUGIN_NAME );
+		}
+
+		/**
+		 * Get related post template
+         * 
+         * @since 1.0.0
+		 */
+		public function get_related_docs_template() {
+
+			if( ! is_singular( 'docs' ) ) {
+				return;
+			}
+
+			include DOC_SUGGESTER_DIR . 'includes/related-post-template.php';
 		}
 	}
 

@@ -41,8 +41,9 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 		 * Constructor
 		 */
 		public function __construct() {
+            add_action( 'wp_ajax_bsf_docs_search', array( $this, 'bsf_docs_get_posts_ajax_callback' ) );
             add_action( 'admin_init', array( $this, 'bsf_docs_suggester_add_meta_boxes' ), 1 );
-            add_action( 'save_post', array( $this, 'bsf_docs_suggester_meta_box_save' ) );
+            add_action( 'save_post', array( $this, 'bsf_docs_save_metaboxdata' ), 10, 2 );
         }
 
         /**
@@ -50,177 +51,90 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 		 *
 		 * @since 1.0.0
 		 */
-        function bsf_docs_suggester_add_meta_boxes() {
+        public function bsf_docs_suggester_add_meta_boxes() {
 
             $custom_post_type = bsf_docs_post_type();
 
-            add_meta_box( 'repeatable-fields', 'BSF Related Docs Suggester', array( $this, 'bsf_docs_meta_box_display' ), $custom_post_type, 'normal', 'default');
+            add_meta_box( 'bsf', 'BSF Related Docs', array( $this, 'rudr_display_select2_metabox' ), $custom_post_type, 'normal', 'default' );
         }
 
-        /**
-		 * Meta Box Adder
-		 *
-		 * @since 1.0.0
-		 */
-        public function bsf_docs_get_docs_options() {
+        /*
+        * Display the fields inside it
+        */
+        public function rudr_display_select2_metabox( $post_object ) {
+            // do not forget about WP Nonces for security purposes
+            // I decided to write all the metabox html into a variable and then echo it at the end
+            $html = '';
 
-            global $wpdb;
+            // always array because we have added [] to our <select> name attribute
+            $appended_posts = get_post_meta( $post_object->ID, 'bsf_related_docs',true );
 
-            $custom_post_type = bsf_docs_post_type();
+            /*
+            * Select Posts with AJAX search
+            */
+            $html .= '<p><label for="bsf_related_docs">Posts:</label><br /><select id="bsf_related_docs" name="bsf_related_docs[]" multiple="multiple" style="width:99%;max-width:25em;">';
 
-            $results = $wpdb->get_results( $wpdb->prepare( "SELECT ID, post_title FROM {$wpdb->posts} WHERE post_type = %s and post_status = 'publish'", $custom_post_type ), ARRAY_A );
-
-            $options = array (
-                '--- Please select doc from the list ---' => 'null',
-            );
-
-            foreach( $results as $index => $post ) {
-                $options[ $post['post_title'] ] = $post['ID'];
-            }
-            
-            return $options;
-        }
-
-        /**
-		 * Meta Box Performer
-		 *
-		 * @since 1.0.0
-		 */
-        public function bsf_docs_meta_box_display() {
-
-            global $post;
-
-            $repeatable_fields = get_post_meta($post->ID, 'bsf_related_docs_option', true);
-            $options = $this->bsf_docs_get_docs_options();
-
-            wp_nonce_field( 'bsf_docs_repeatable_meta_box_nonce', 'bsf_docs_repeatable_meta_box_nonce' ); ?>
-            <script type="text/javascript">
-                jQuery(document).ready(function( $ ){
-                    $('#bsf-docs-list').select2({
-                        placeholder: 'Select a Doc'
-                    });
-                    $( '#add-row' ).on('click', function() {
-                        var row = $( '.empty-row.screen-reader-text' ).clone(true);
-                        row.removeClass( 'empty-row screen-reader-text' );
-                        row.insertBefore( '#bsf-docs-repeatable-fieldset tbody>tr:last' );
-                        return false;
-                    });
-                    $( '.remove-row' ).on('click', function() {
-                        $(this).parents('tr').remove();
-                        return false;
-                    });
-                });
-            </script>
-
-            <table id="bsf-docs-repeatable-fieldset" width="100%">
-                <thead>
-                    <tr>
-                        <th width="40%">Name</th>
-                        <th width="12%">Select</th>
-                        <th width="8%"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-
-                if ( $repeatable_fields ) :
-
-                foreach ( $repeatable_fields as $field ) {
-                    ?>
-                        <tr>
-                            <td><input type="text" class="widefat" name="name[]" value="<?php if( $field['name'] != '' ) echo esc_attr( $field['name'] ); ?>" /></td>
-
-                            <td>
-                                <select id="bsf-docs-list" name="select[]">
-                                    <?php foreach ( $options as $label => $value ) : ?>
-                                        <option value="<?php echo $value; ?>"<?php selected( $field['select'], $value ); ?>><?php echo $label; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-
-                            <td><a class="button remove-row" href="#">Remove</a></td>
-                        </tr>
-                    <?php
+            if( $appended_posts ) {
+                foreach( $appended_posts as $post_id ) {
+                    $title = get_the_title( $post_id );
+                    // if the post title is too long, truncate it and add "..." at the end
+                    $title = ( mb_strlen( $title ) > 50 ) ? mb_substr( $title, 0, 49 ) . '...' : $title;
+                    $html .=  '<option value="' . $post_id . '" selected="selected">' . $title . '</option>';
                 }
-                else :
-                // show a blank one
-                ?>
-                <tr>
-                    <td><input type="text" class="widefat" name="name[]" /></td>
-
-                    <td>
-                        <select name="select[]">
-                        <?php foreach ( $options as $label => $value ) : ?>
-                        <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
-                        <?php endforeach; ?>
-                        </select>
-                    </td>
-
-                    <td><a class="button remove-row" href="#">Remove</a></td>
-                </tr>
-                <?php endif; ?>
-                
-                <!-- empty hidden one for jQuery -->
-                <tr class="empty-row screen-reader-text">
-                    <td><input type="text" class="widefat" name="name[]" /></td>
-
-                    <td>
-                        <select name="select[]">
-                        <?php foreach ( $options as $label => $value ) : ?>
-                        <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
-                        <?php endforeach; ?>
-                        </select>
-                    </td>
-
-                    <td><a class="button remove-row" href="#">Remove</a></td>
-                </tr>
-                </tbody>
-            </table>
-            
-            <p><a id="add-row" class="button" href="#">Add another</a></p>
-            <?php
-        }
-
-        /**
-		 * Save Meta Box Performer
-		 *
-		 * @since 1.0.0
-		 */
-        function bsf_docs_suggester_meta_box_save( $post_id ) {
-
-            if ( ! isset( $_POST['bsf_docs_repeatable_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['bsf_docs_repeatable_meta_box_nonce'], 'bsf_docs_repeatable_meta_box_nonce' ) )
-                return;
-
-            if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
-                return;
-
-            if ( ! current_user_can( 'edit_post', $post_id ) )
-                return;
-
-            $old = get_post_meta( $post_id, 'bsf_related_docs_option', true );
-            $new = array();
-            $options = $this->bsf_docs_get_docs_options();
-
-            $names = $_POST['name'];
-            $selects = $_POST['select'];
-
-            $count = count( $names );
-
-            for ( $i = 0; $i < $count; $i++ ) {
-                if ( $names[$i] != '' ) :
-                    $new[$i]['name'] = stripslashes( strip_tags( $names[$i] ) );
-
-                if ( in_array( $selects[$i], $options ) )
-                    $new[$i]['select'] = $selects[$i];
-                else
-                    $new[$i]['select'] = '';
-                endif;
             }
 
-            if ( ! empty( $new ) && $new != $old )
-                update_post_meta( $post_id, 'bsf_related_docs_option', $new );
-            elseif ( empty($new) && $old )
-                delete_post_meta( $post_id, 'bsf_related_docs_option', $old );
+            $html .= '</select></p>';
+
+            echo $html;
+        }
+
+        /*
+        * Save metabox
+        */
+        public function bsf_docs_save_metaboxdata( $post_id, $post ) {
+ 
+            if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return $post_id;
+
+            $custom_post_type = bsf_docs_post_type();
+
+            // if post type is different from our selected one, do nothing.
+            if ( $post->post_type == $custom_post_type ) {
+
+                if( isset( $_POST['bsf_related_docs'] ) )
+                    update_post_meta( $post_id, 'bsf_related_docs', $_POST['bsf_related_docs'] );
+                else
+                    delete_post_meta( $post_id, 'bsf_related_docs' );
+            }
+
+            return $post_id;
+        }
+
+        /*
+        * AJAX Action for rendering searching posts
+        */
+        function bsf_docs_get_posts_ajax_callback(){
+ 
+            // we will pass post IDs and titles to this array.
+            $return = array();
+
+            // you can use WP_Query, query_posts() or get_posts() here - it doesn't matter.
+            $search_results = new WP_Query( array(
+                's'=> $_GET['q'], // the search query.
+                'post_status' => 'publish', // if you don't want drafts to be returned.
+                'ignore_sticky_posts' => 1,
+                'posts_per_page' => 50 // how much to show at once.
+            ));
+
+            if( $search_results->have_posts() ) :
+                while( $search_results->have_posts() ) : $search_results->the_post();	
+                    // shorten the title a little
+                    $title = ( mb_strlen( $search_results->post->post_title ) > 50 ) ? mb_substr( $search_results->post->post_title, 0, 49 ) . '...' : $search_results->post->post_title;
+                    $return[] = array( $search_results->post->ID, $title ); // array( Post ID, Post Title )
+                endwhile;
+            endif;
+
+            echo json_encode( $return );
+            die;
         }
     }
 

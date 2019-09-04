@@ -65,10 +65,11 @@ if ( ! class_exists( 'Doc_Suggester_Loader' ) ) :
 			global $pagenow;
 			global $post;
 	
-			$screen = get_current_screen();
-	
-			wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
-			wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', array('jquery') );
+			wp_enqueue_style( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
+			wp_enqueue_script( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', array('jquery') );
+
+			// please create also an empty JS file in your theme directory and include it too
+			wp_enqueue_script( 'bsfdocs', DOC_SUGGESTER_URL . 'admin/js/bsfdocs.js', array( 'jquery', 'select2' ) ); 
 		}
 
 		/**

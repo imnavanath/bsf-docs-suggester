@@ -72,7 +72,7 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
             /*
             * Select Posts with AJAX search
             */
-            $html .= '<p><label for="bsf_related_docs">Posts:</label><br /><select id="bsf_related_docs" name="bsf_related_docs[]" multiple="multiple" style="width:99%;max-width:25em;">';
+            $html .= '<p><label for="bsf_related_docs">Docs:</label><br /><select id="bsf_related_docs" name="bsf_related_docs[]" multiple="multiple" style="width:99%;max-width:25em;">';
 
             if( $appended_posts ) {
                 foreach( $appended_posts as $post_id ) {

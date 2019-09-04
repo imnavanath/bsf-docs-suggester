@@ -49,8 +49,27 @@ if ( ! class_exists( 'Doc_Suggester_Loader' ) ) :
 				return;
 			}
 
+			/* Add Scripts */
+			add_action( 'admin_enqueue_scripts', __CLASS__ . '::admin_meta_scripts', 20 );
+
 			require_once DOC_SUGGESTER_DIR . 'classes/class-meta-box.php';
-        }
+		}
+
+		/**
+		 * Render Admin Scripts.
+         * 
+         * @since 1.0.0
+		 */
+		public static function admin_meta_scripts() {
+
+			global $pagenow;
+			global $post;
+	
+			$screen = get_current_screen();
+	
+			wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
+			wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', array('jquery') );
+		}
 
 		/**
 		 * Add Admin Notice.

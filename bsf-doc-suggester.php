@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Astra Doc Suggester
+ * Plugin Name: BSF Doc Suggester
  * Author: Brainstorm Force, Navanath Bhosale
  * Author URI: https://brainstormforce.com
  * Version: 1.0.0

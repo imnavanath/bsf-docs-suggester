@@ -23,15 +23,6 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 		 * @since 1.0.0
 		 */
         private static $instance;
-        
-        /**
-		 * Instance
-		 *
-		 * @access private
-		 * @var object Class Instance.
-		 * @since 1.0.0
-		 */
-		private static $existing_docs;
 
 		/**
 		 * Initiator
@@ -50,8 +41,8 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 		 * Constructor
 		 */
 		public function __construct() {
-            add_action( 'admin_init', array( $this, 'hhs_add_meta_boxes' ), 1 );
-            add_action( 'save_post', array( $this, 'hhs_repeatable_meta_box_save' ) );
+            add_action( 'admin_init', array( $this, 'bsf_docs_suggester_add_meta_boxes' ), 1 );
+            add_action( 'save_post', array( $this, 'bsf_docs_suggester_meta_box_save' ) );
         }
 
         /**
@@ -59,11 +50,11 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 		 *
 		 * @since 1.0.0
 		 */
-        function hhs_add_meta_boxes() {
+        function bsf_docs_suggester_add_meta_boxes() {
 
             $custom_post_type = bsf_docs_post_type();
 
-            add_meta_box( 'repeatable-fields', 'Repeatable Fields', array( $this, 'hhs_repeatable_meta_box_display' ), $custom_post_type, 'normal', 'default');
+            add_meta_box( 'repeatable-fields', 'BSF Related Docs Suggester', array( $this, 'bsf_docs_meta_box_display' ), $custom_post_type, 'normal', 'default');
         }
 
         /**
@@ -71,7 +62,7 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 		 *
 		 * @since 1.0.0
 		 */
-        public function hhs_get_sample_options() {
+        public function bsf_docs_get_docs_options() {
 
             global $wpdb;
 
@@ -95,103 +86,98 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 		 *
 		 * @since 1.0.0
 		 */
-        public function hhs_repeatable_meta_box_display() {
+        public function bsf_docs_meta_box_display() {
 
             global $post;
 
-            $repeatable_fields = get_post_meta( $post->ID, 'bsf_related_docs_suggession', true );
-            $options = $this->hhs_get_sample_options();
-        
-            wp_nonce_field( 'hhs_repeatable_meta_box_nonce', 'hhs_repeatable_meta_box_nonce' );
+            $repeatable_fields = get_post_meta($post->ID, 'bsf_related_docs_option', true);
+            $options = $this->bsf_docs_get_docs_options();
 
-            ?>
-                <script type="text/javascript">
-                    jQuery(document).ready(function( $ ){
-                        $( '#add-row' ).on('click', function() {
-                            var row = $( '.empty-row.screen-reader-text' ).clone(true);
-                            row.removeClass( 'empty-row screen-reader-text' );
-                            row.insertBefore( '#repeatable-fieldset-one tbody>tr:last' );
-                            return false;
-                        });
-                    
-                        $( '.remove-row' ).on('click', function() {
-                            $(this).parents('tr').remove();
-                            return false;
-                        });
+            wp_nonce_field( 'bsf_docs_repeatable_meta_box_nonce', 'bsf_docs_repeatable_meta_box_nonce' ); ?>
+            <script type="text/javascript">
+                jQuery(document).ready(function( $ ){
+                    $('#bsf-docs-list').select2({
+                        placeholder: 'Select a Doc'
                     });
-                </script>
-          
-            <table id="repeatable-fieldset-one" width="100%">
+                    $( '#add-row' ).on('click', function() {
+                        var row = $( '.empty-row.screen-reader-text' ).clone(true);
+                        row.removeClass( 'empty-row screen-reader-text' );
+                        row.insertBefore( '#bsf-docs-repeatable-fieldset tbody>tr:last' );
+                        return false;
+                    });
+                    $( '.remove-row' ).on('click', function() {
+                        $(this).parents('tr').remove();
+                        return false;
+                    });
+                });
+            </script>
+
+            <table id="bsf-docs-repeatable-fieldset" width="100%">
                 <thead>
-                    <tr style="text-align: left;">
-                        <th width="25%">Name</th>
-                        <th width="45%">Select Doc</th>
-                        <th width="20%">Action</th>
+                    <tr>
+                        <th width="40%">Name</th>
+                        <th width="12%">Select</th>
+                        <th width="8%"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
+                <?php
 
-                        if ( $repeatable_fields ) :
+                if ( $repeatable_fields ) :
 
-                            foreach ( $repeatable_fields as $field ) {
-                                ?>
-                                    <tr>
-                                        <td><input type="text" class="widefat" name="name[]" value="<?php if( $field['name'] != '' ) echo esc_attr( $field['name'] ); ?>" /></td>
-
-                                        <td>
-                                            <select name="select[]">
-                                                <?php foreach ( $options as $label => $value ) : ?>
-                                                    <option value="<?php echo $value; ?>"<?php selected( $field['select'], $value ); ?>><?php echo $label; ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </td>
-                                    
-                                        <td><a class="button remove-row" href="#">Remove</a></td>
-                                    </tr>
-                                <?php
-                            }
-                        else :
+                foreach ( $repeatable_fields as $field ) {
                     ?>
-                    <tr>
-                        <td>
-                            <input type="text" class="widefat" name="name[]" />
-                        </td>
-                    
-                        <td>
-                            <select name="select[]">
-                                <?php foreach ( $options as $label => $value ) : ?>
-                                    <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    
-                        <td><a class="button remove-row" href="#">Remove</a></td>
-                    </tr>
+                        <tr>
+                            <td><input type="text" class="widefat" name="name[]" value="<?php if( $field['name'] != '' ) echo esc_attr( $field['name'] ); ?>" /></td>
 
-                    <?php endif; ?>
+                            <td>
+                                <select id="bsf-docs-list" name="select[]">
+                                    <?php foreach ( $options as $label => $value ) : ?>
+                                        <option value="<?php echo $value; ?>"<?php selected( $field['select'], $value ); ?>><?php echo $label; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
 
-                    <tr class="empty-row screen-reader-text">
+                            <td><a class="button remove-row" href="#">Remove</a></td>
+                        </tr>
+                    <?php
+                }
+                else :
+                // show a blank one
+                ?>
+                <tr>
+                    <td><input type="text" class="widefat" name="name[]" /></td>
 
-                        <td>
-                            <input type="text" class="widefat" name="name[]" />
-                        </td>
+                    <td>
+                        <select name="select[]">
+                        <?php foreach ( $options as $label => $value ) : ?>
+                        <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
+                        <?php endforeach; ?>
+                        </select>
+                    </td>
 
-                        <td>
-                            <select name="select[]">
-                                <?php foreach ( $options as $label => $value ) : ?>
-                                    <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
+                    <td><a class="button remove-row" href="#">Remove</a></td>
+                </tr>
+                <?php endif; ?>
+                
+                <!-- empty hidden one for jQuery -->
+                <tr class="empty-row screen-reader-text">
+                    <td><input type="text" class="widefat" name="name[]" /></td>
 
-                        <td><a class="button remove-row" href="#">Remove</a></td>
-                    </tr>
+                    <td>
+                        <select name="select[]">
+                        <?php foreach ( $options as $label => $value ) : ?>
+                        <option value="<?php echo $value; ?>"><?php echo $label; ?></option>
+                        <?php endforeach; ?>
+                        </select>
+                    </td>
+
+                    <td><a class="button remove-row" href="#">Remove</a></td>
+                </tr>
                 </tbody>
             </table>
             
             <p><a id="add-row" class="button" href="#">Add another</a></p>
-
             <?php
         }
 
@@ -200,21 +186,20 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 		 *
 		 * @since 1.0.0
 		 */
-        function hhs_repeatable_meta_box_save($post_id) {
+        function bsf_docs_suggester_meta_box_save( $post_id ) {
 
-            if ( ! isset( $_POST[ 'hhs_repeatable_meta_box_nonce' ] ) ||
-            ! wp_verify_nonce( $_POST[ 'hhs_repeatable_meta_box_nonce' ], 'hhs_repeatable_meta_box_nonce' ) )
+            if ( ! isset( $_POST['bsf_docs_repeatable_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['bsf_docs_repeatable_meta_box_nonce'], 'bsf_docs_repeatable_meta_box_nonce' ) )
                 return;
-            
-            if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE )
+
+            if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
                 return;
-            
+
             if ( ! current_user_can( 'edit_post', $post_id ) )
                 return;
-            
-            $old_data = get_post_meta( $post_id, 'bsf_related_docs_suggession', true );
-            $new_updated_data = array();
-            $options = $this->hhs_get_sample_options();
+
+            $old = get_post_meta( $post_id, 'bsf_related_docs_option', true );
+            $new = array();
+            $options = $this->bsf_docs_get_docs_options();
 
             $names = $_POST['name'];
             $selects = $_POST['select'];
@@ -223,20 +208,19 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 
             for ( $i = 0; $i < $count; $i++ ) {
                 if ( $names[$i] != '' ) :
-
                     $new[$i]['name'] = stripslashes( strip_tags( $names[$i] ) );
 
-                    if ( in_array( $selects[$i], $options ) )
-                        $new_updated_data[$i]['select'] = $selects[$i];
-                    else
-                        $new_updated_data[$i]['select'] = '';
+                if ( in_array( $selects[$i], $options ) )
+                    $new[$i]['select'] = $selects[$i];
+                else
+                    $new[$i]['select'] = '';
                 endif;
             }
 
-            if ( ! empty( $new_updated_data ) && $new_updated_data != $old_data )
-                update_post_meta( $post_id, 'bsf_related_docs_suggession', $new_updated_data );
-            elseif ( empty( $new_updated_data ) && $old_data )
-                delete_post_meta( $post_id, 'bsf_related_docs_suggession', $old_data );
+            if ( ! empty( $new ) && $new != $old )
+                update_post_meta( $post_id, 'bsf_related_docs_option', $new );
+            elseif ( empty($new) && $old )
+                delete_post_meta( $post_id, 'bsf_related_docs_option', $old );
         }
     }
 

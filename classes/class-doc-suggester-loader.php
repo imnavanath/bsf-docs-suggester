@@ -51,6 +51,7 @@ if ( ! class_exists( 'Doc_Suggester_Loader' ) ) :
 
 			/* Add Scripts */
 			add_action( 'admin_enqueue_scripts', __CLASS__ . '::admin_meta_scripts', 20 );
+			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_front_scripts' ), 10 );
 
 			require_once DOC_SUGGESTER_DIR . 'classes/class-meta-box.php';
 
@@ -66,12 +67,26 @@ if ( ! class_exists( 'Doc_Suggester_Loader' ) ) :
 
 			global $pagenow;
 			global $post;
-	
-			wp_enqueue_style( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
-			wp_enqueue_script( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', array('jquery') );
+			$post_type = bsf_docs_post_type();
+			$screen = get_current_screen();
 
-			// please create also an empty JS file in your theme directory and include it too
-			wp_enqueue_script( 'bsfdocs', DOC_SUGGESTER_URL . 'admin/js/bsfdocs.js', array( 'jquery', 'select2' ) ); 
+			if ( ( 'post-new.php' == $pagenow || 'post.php' == $pagenow ) && $post_type == $screen->post_type ) {
+	
+				wp_enqueue_style( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
+				wp_enqueue_script( 'select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', array('jquery') );
+
+				// please create also an empty JS file in your theme directory and include it too
+				wp_enqueue_script( 'bsfdocs', DOC_SUGGESTER_URL . 'admin/js/bsfdocs.js', array( 'jquery', 'select2' ) );
+			}
+		}
+
+		/**
+		 * Enqueue frontend scripts
+		 *
+		 * @since 1.0
+		 */
+		public function enqueue_front_scripts() {
+			wp_enqueue_style( 'bsf-docs-suggester-style', DOC_SUGGESTER_URL . 'admin/css/style.css' );
 		}
 
 		/**

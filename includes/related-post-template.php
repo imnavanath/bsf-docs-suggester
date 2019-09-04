@@ -17,7 +17,7 @@ if( empty( $related_docs_meta ) ) {
 ?>
 
 <div class="related-docs-container">
-    <div class="related-docs-wrappe text-below-single-docs" style="margin-bottom: 0; padding-bottom: 0;">
+    <div class="related-docs-wrapper text-below-single-docs">
     <h3 class="related-docs-section-title"> Related Articles - </h3>
         <ul>
             <?php

@@ -58,8 +58,10 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
             add_meta_box( 'bsf', 'BSF Related Docs', array( $this, 'rudr_display_select2_metabox' ), $custom_post_type, 'normal', 'default' );
         }
 
-        /*
+        /**
         * Display the fields inside it
+        *
+        * @since 1.0.0
         */
         public function rudr_display_select2_metabox( $post_object ) {
             // do not forget about WP Nonces for security purposes
@@ -72,7 +74,7 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
             /*
             * Select Posts with AJAX search
             */
-            $html .= '<p><label for="bsf_related_docs">Docs:</label><br /><select id="bsf_related_docs" name="bsf_related_docs[]" multiple="multiple" style="width:99%;max-width:25em;">';
+            $html .= '<p><label for="bsf_related_docs"><p> Add Docs - </p></label><select id="bsf_related_docs" name="bsf_related_docs[]" multiple="multiple" style="width:99%;max-width:25em;">';
 
             if( $appended_posts ) {
                 foreach( $appended_posts as $post_id ) {
@@ -88,8 +90,10 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
             echo $html;
         }
 
-        /*
+        /**
         * Save metabox
+        *
+        * @since 1.0.0
         */
         public function bsf_docs_save_metaboxdata( $post_id, $post ) {
  
@@ -109,10 +113,12 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
             return $post_id;
         }
 
-        /*
+        /**
         * AJAX Action for rendering searching posts
+        *
+        * @since 1.0.0
         */
-        function bsf_docs_get_posts_ajax_callback(){
+        function bsf_docs_get_posts_ajax_callback() {
  
             // we will pass post IDs and titles to this array.
             $return = array();
@@ -127,9 +133,9 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
 
             if( $search_results->have_posts() ) :
                 while( $search_results->have_posts() ) : $search_results->the_post();	
-                    // shorten the title a little
+                    // shorten the title a little.
                     $title = ( mb_strlen( $search_results->post->post_title ) > 50 ) ? mb_substr( $search_results->post->post_title, 0, 49 ) . '...' : $search_results->post->post_title;
-                    $return[] = array( $search_results->post->ID, $title ); // array( Post ID, Post Title )
+                    $return[] = array( $search_results->post->ID, $title ); // array( Post ID, Post Title ).
                 endwhile;
             endif;
 

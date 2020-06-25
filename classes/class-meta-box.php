@@ -126,7 +126,8 @@ if ( ! class_exists( 'Doc_Suggester_Meta_Box' ) ) :
             // you can use WP_Query, query_posts() or get_posts() here - it doesn't matter.
             $search_results = new WP_Query( array(
                 's'=> $_GET['q'], // the search query.
-                'post_status' => 'publish', // if you don't want drafts to be returned.
+                'post_type' => array( 'post', 'docs' ),
+                'post_status' => array( 'draft', 'publish', 'pending' ),
                 'ignore_sticky_posts' => 1,
                 'posts_per_page' => 50 // how much to show at once.
             ));

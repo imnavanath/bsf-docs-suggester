@@ -8,6 +8,10 @@
 
 $post_id = get_the_ID();
 
+if( ! $post_id ) {
+    return;
+}
+
 $related_docs_meta = get_post_meta( $post_id, 'bsf_related_docs' );
 
 if( empty( $related_docs_meta ) ) {
@@ -16,7 +20,7 @@ if( empty( $related_docs_meta ) ) {
 
 <div class="related-docs-container">
     <div class="related-docs-wrapper">
-    <h3 class="related-docs-section-title"> Related Articles - </h3>
+    <h4 class="related-docs-section-title"> Related Articles - </h4>
         <ul>
             <?php
                 foreach ( $related_docs_meta as $key => $value ) {

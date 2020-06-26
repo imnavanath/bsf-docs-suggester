@@ -3,7 +3,7 @@
  * Plugin Name: BSF Doc Suggester
  * Author: Brainstorm Force, Navanath Bhosale
  * Author URI: https://brainstormforce.com
- * Version: 1.0.0
+ * Version: 1.0.1
  * Description: This plugin provides priviledge to add suggested docs on the frontend.
  * Text Domain: doc-suggester
  *
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Set constants.
  */
 define( 'DOC_SUGGESTER_FILE', __FILE__ );
-define( 'DOC_SUGGESTER_VER', '1.0.0' );
+define( 'DOC_SUGGESTER_VER', '1.0.1' );
 define( 'DOC_SUGGESTER_PLUGIN_NAME', 'Docs Suggester' );
 define( 'DOC_SUGGESTER_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DOC_SUGGESTER_URL', plugins_url( '/', __FILE__ ) );

@@ -55,7 +55,7 @@ if ( ! class_exists( 'Doc_Suggester_Loader' ) ) :
 
 			require_once DOC_SUGGESTER_DIR . 'classes/class-meta-box.php';
 
-			add_action( 'loop_end', array( $this, 'get_related_docs_template' ), 9 );
+			add_action( 'bsf_docs_after_single_content', array( $this, 'get_related_docs_template' ) );
 		}
 
 		/**
@@ -104,12 +104,7 @@ if ( ! class_exists( 'Doc_Suggester_Loader' ) ) :
          * @since 1.0.0
 		 */
 		public function get_related_docs_template() {
-
-			if ( 'docs' === get_post_type() ) {
-				if ( is_single() ) {
-					include DOC_SUGGESTER_DIR . 'includes/related-post-template.php';
-				}
-			}
+			include DOC_SUGGESTER_DIR . 'includes/related-post-template.php';
 		}
 	}
 
